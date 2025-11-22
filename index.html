@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Wasl Smart Library Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        :root {
+            --bg-main: #020617;
+            --bg-card: rgba(15,23,42,0.98);
+            --border-glow: rgba(56,189,248,0.7);
+            --accent: #38bdf8;
+            --accent-soft: rgba(56,189,248,0.15);
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #020617 0, #000 55%, #020617 100%);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* خلفيات مضيئة + شبكة خفيفة */
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.32;
+            z-index: -2;
+        }
+
+        body::before {
+            width: 420px; height: 420px;
+            background: #22d3ee;
+            top: -120px; right: -80px;
+            animation: floatGlow 18s infinite alternate;
+        }
+
+        body::after {
+            width: 480px; height: 480px;
+            background: #6366f1;
+            bottom: -160px; left: -120px;
+            animation: floatGlow 22s infinite alternate;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate3d(0,0,0); }
+            50% { transform: translate3d(35px,-25px,0); }
+            100% { transform: translate3d(-20px,15px,0); }
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(to right, rgba(15,23,42,0.55) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(15,23,42,0.55) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 1120px;
+            animation: pageIn 0.5s ease-out;
+        }
+
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            background: radial-gradient(circle at top left, #020617, #020617 55%, #020617);
+            padding: 14px 18px;
+            border-radius: 18px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(148,163,184,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            box-shadow: 0 0 26px rgba(15,23,42,0.95);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border-radius: 18px;
+            background: conic-gradient(
+                from 120deg,
+                rgba(56,189,248,0.75),
+                rgba(129,140,248,0.55),
+                transparent,
+                rgba(56,189,248,0.75)
+            );
+            opacity: 0.18;
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        .header-text {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: 0.04em;
+        }
+
+        header p {
+            margin: 6px 0 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .subtitle-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 6px;
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(56,189,248,0.6);
+            background: rgba(15,23,42,0.85);
+            color: var(--accent);
+        }
+
+        .subtitle-chip span {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
+        }
+
+        .wasl-logo {
+            width: 82px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(56,189,248,0.85));
+            position: relative;
+            z-index: 1;
+            animation: logoFloat 5s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: row-reverse;
+            }
+            header h1 {
+                font-size: 19px;
+            }
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.35);
+            box-shadow:
+                0 18px 45px rgba(15,23,42,0.9),
+                0 0 0 1px rgba(15,23,42,0.95);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(56,189,248,0.22), transparent 60%);
+            opacity: 0.9;
+            mix-blend-mode: soft-light;
+            pointer-events: none;
+        }
+
+        .card h2,
+        .card h3 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 16px;
+            letter-spacing: 0.03em;
+        }
+
+        .card h2 span {
+            font-size: 12px;
+            display: block;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .chat-window {
+            background: radial-gradient(circle at top, #020617, #020617 60%, #020617);
+            border-radius: 14px;
+            padding: 10px;
+            height: 360px;
+            overflow-y: auto;
+            border: 1px solid rgba(30,64,175,0.7);
+            box-shadow: inset 0 0 22px rgba(15,23,42,0.95);
+            position: relative;
+        }
+
+        .chat-window::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-window::-webkit-scrollbar-track { background: transparent; }
+        .chat-window::-webkit-scrollbar-thumb {
+            background: rgba(51,65,85,0.9);
+            border-radius: 999px;
+        }
+
+        .message {
+            padding: 8px 10px;
+            border-radius: 14px;
+            margin: 7px 0;
+            max-width: 86%;
+            font-size: 13px;
+            line-height: 1.55;
+            display: inline-block;
+            animation: msgIn 0.2s ease-out;
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #1d4ed8, #38bdf8);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 0 14px rgba(56,189,248,0.7);
+        }
+
+        .message.bot {
+            background: rgba(15,23,42,0.98);
+            color: var(--text-main);
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+            border: 1px solid rgba(148,163,184,0.4);
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .typing-indicator.active {
+            display: inline-flex;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.5;
+            animation: dotPulse 1s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes dotPulse {
+            0%,100% { transform: translateY(0); opacity: 0.4; }
+            50%     { transform: translateY(-3px); opacity: 1; }
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.65);
+            outline: none;
+            background: rgba(15,23,42,0.96);
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        #userInput::placeholder { color: #6b7280; }
+
+        .send-btn {
+            padding: 0 18px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #38bdf8, #6366f1);
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 0 16px rgba(56,189,248,0.9);
+        }
+
+        .send-btn:hover { filter: brightness(1.07); }
+
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 10px 0 6px;
+        }
+
+        .quick-buttons button {
+            border-radius: 999px;
+            border: 1px solid rgba(56,189,248,0.55);
+            background: rgba(15,23,42,0.96);
+            padding: 5px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quick-buttons button::before {
+            content: "•";
+            color: var(--accent);
+            font-size: 12px;
+        }
+
+        .quick-buttons button:hover {
+            background: rgba(37,99,235,0.6);
+        }
+
+        .ai-helper-box textarea {
+            width: 100%;
+            height: 140px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(148,163,184,0.6);
+            resize: none;
+            background: radial-gradient(circle at top, #020617, #020617 60%, #020617);
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        .ai-helper-box textarea::placeholder { color: #6b7280; }
+
+        .ai-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .ai-buttons button {
+            flex: 1 1 calc(50% - 8px);
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(56,189,248,0.75);
+            cursor: pointer;
+            background: radial-gradient(circle at top left, #0f172a, #020617);
+            color: var(--text-main);
+            font-size: 12px;
+        }
+
+        .ai-buttons button:hover {
+            background: linear-gradient(135deg, rgba(56,189,248,0.3), rgba(79,70,229,0.4));
+        }
+
+        #aiOutput {
+            background: radial-gradient(circle at top, #020617, #020617 60%, #020617);
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 12px;
+            min-height: 70px;
+            border: 1px solid rgba(56,189,248,0.55);
+            font-size: 13px;
+            white-space: pre-line;
+            box-shadow: inset 0 0 20px rgba(15,23,42,0.95);
+        }
+
+        .services {
+            margin-top: 18px;
+        }
+
+        .services-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .services-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        }
+
+        @media (max-width: 600px) {
+            .services-grid { grid-template-columns: 1fr; }
+        }
+
+        .service-card {
+            background: rgba(15,23,42,0.98);
+            border-radius: 14px;
+            padding: 10px 11px;
+            border: 1px solid rgba(56,189,248,0.55);
+            position: relative;
+            overflow: hidden;
+            font-size: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            animation: cardIn 0.35s ease-out;
+        }
+
+        .service-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(56,189,248,0.27), transparent 55%);
+            opacity: 0.9;
+            mix-blend-mode: soft-light;
+            pointer-events: none;
+        }
+
+        .service-card h4 {
+            margin: 0 0 4px;
+            font-size: 13px;
+            color: var(--text-main);
+        }
+
+        .service-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(56,189,248,0.85);
+            font-size: 10px;
+            color: var(--accent);
+            background: rgba(15,23,42,0.95);
+            margin-top: 4px;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* قسم الفهرس الموحد */
+        .opac-card {
+            margin-top: 18px;
+        }
+
+        .opac-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .opac-header-title {
+            font-size: 14px;
+            letter-spacing: 0.05em;
+        }
+
+        .opac-header-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .opac-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .opac-controls input,
+        .opac-controls select {
+            padding: 7px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.6);
+            background: rgba(15,23,42,0.96);
+            color: var(--text-main);
+            font-size: 12px;
+        }
+
+        .opac-controls input::placeholder {
+            color: #6b7280;
+        }
+
+        .opac-search-btn {
+            padding: 7px 14px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #38bdf8, #6366f1);
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(56,189,248,0.8);
+        }
+
+        .opac-search-btn:hover {
+            filter: brightness(1.06);
+        }
+
+        .opac-results {
+            margin-top: 4px;
+            border-radius: 12px;
+            border: 1px solid rgba(31,41,55,0.8);
+            background: radial-gradient(circle at top, #020617, #020617 60%, #020617);
+            padding: 8px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .opac-results table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .opac-results th,
+        .opac-results td {
+            padding: 6px 5px;
+            text-align: right;
+            border-bottom: 1px solid rgba(31,41,55,0.9);
+        }
+
+        .opac-results th {
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(15,23,42,0.96);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .status-available {
+            color: #22c55e;
+        }
+
+        .status-loan {
+            color: #f97316;
+        }
+
+        .status-library {
+            color: #eab308;
+        }
+
+        .highlight-opac {
+            box-shadow: 0 0 0 1px rgba(56,189,248,0.9), 0 0 28px rgba(56,189,248,0.7);
+            transition: box-shadow 0.6s ease-out;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+
+<div class="page">
+    <header>
+        <img src="logo.png" alt="شعار جامعة الوصل" class="wasl-logo">
+
+        <div class="header-text">
+            <h1>روبوت دردشة مكتبة جامعة الوصل</h1>
+            <p>مساعد ذكي يتفاعل مع استفساراتك حول خدمات المكتبة، الفهرس الموحد، والمصادر الرقمية.</p>
+            <div class="subtitle-chip">
+                <span></span>
+                Online • Wasl Smart Library Bot
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- صندوق الشات بوت -->
+        <section class="card">
+            <h2>💬 اسأل مكتبة جامعة الوصل <span>Ask Wasl Library</span></h2>
+
+            <div class="chat-window" id="chatWindow">
+                <div id="typingIndicator" class="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span>المساعد يكتب...</span>
+                </div>
+            </div>
+
+            <div class="quick-buttons">
+                <button onclick="quickAsk('ما هي مواعيد عمل المكتبة؟')">مواعيد المكتبة</button>
+                <button onclick="quickAsk('أين تقع مكتبة جامعة الوصل؟')">موقع المكتبة</button>
+                <button onclick="quickAsk('ما هي سياسة الإعارة؟')">سياسة الإعارة</button>
+                <button onclick="quickAsk('ما هي مصادر المعلومات المتاحة في مكتبة جامعة الوصل؟')">المصادر المتاحة</button>
+                <!-- هذا يفتح الفهرس الموحد -->
+                <button onclick="openOpac()">الفهرس الموحد</button>
+                <button onclick="quickAsk('ما هي قواعد البيانات المتاحة مثل المنهل؟')">قواعد البيانات</button>
+                <button onclick="quickAsk('ما هي البرامج الأكاديمية التي تخدمها المكتبة؟')">البرامج الأكاديمية</button>
+                <button onclick="quickAsk('ما هو نظام التصنيف المستخدم في مكتبة جامعة الوصل؟')">نظام التصنيف</button>
+                <button onclick="quickAsk('كيف أدخل إلى قاعدة المنهل؟')">الوصول للمنهل</button>
+                <button onclick="quickAsk('ما هي طرق التواصل مع المكتبة؟')">التواصل</button>
+            </div>
+
+            <div class="chat-input-row">
+                <input id="userInput" type="text" placeholder="اكتبي سؤالك هنا…">
+                <button class="send-btn" onclick="sendMessage()">إرسال ▸</button>
+            </div>
+        </section>
+
+        <!-- المساعد البحثي الذكي -->
+        <section class="card ai-helper-box">
+            <h3>🤖 المساعد البحثي الذكي – Smart Library Helper</h3>
+            <p style="font-size:12px; margin-top:0; color:var(--text-muted);">
+                ألصقي نصًا من بحثك أو اكتبي وصفًا لموضوعك، ثم اختاري نوع المساعدة التي تحتاجينها:
+            </p>
+
+            <textarea id="aiInput" placeholder="ألصقي فقرة من بحثك أو اكتبي وصف الموضوع الذي تعملين عليه..."></textarea>
+
+            <div class="ai-buttons">
+                <button onclick="summarize()">تلخيص النص</button>
+                <button onclick="keywords()">اقتراح كلمات مفتاحية</button>
+                <button onclick="titleGenerate()">إنشاء عنوان بحث</button>
+                <button onclick="writeEmail()">كتابة استفسار رسمي للمكتبة</button>
+            </div>
+
+            <div id="aiOutput">
+                هنا ستظهر نتيجة المساعد البحثي الذكي بعد اختيار نوع المساعدة.
+            </div>
+        </section>
+    </main>
+
+    <!-- كروت الخدمات -->
+    <section class="services">
+        <div class="services-title">نظرة سريعة على أبرز خدمات مكتبة جامعة الوصل:</div>
+        <div class="services-grid">
+            <div class="service-card" onclick="openOpac()">
+                <h4>الفهرس الموحد</h4>
+                يتيح البحث في مجموعات المكتبة بالعنوان، المؤلف، الموضوع، أو رقم التصنيف، مع عرض حالة التوفر وموقع الكتاب على الرفوف.
+                <div class="service-tag">Unified Catalog • OPAC</div>
+            </div>
+            <div class="service-card">
+                <h4>قاعدة المنهل</h4>
+                توفر مصادر عربية إلكترونية من كتب ورسائل جامعية ومقالات دورية، لدعم متطلبات البرامج الأكاديمية المختلفة.
+                <div class="service-tag">Arabic e-Resources</div>
+            </div>
+            <div class="service-card">
+                <h4>قواعد البيانات الإلكترونية</h4>
+                تتيح الوصول إلى مصادر علمية محكمة ومجلات متخصصة، ويتم الدخول إليها عبر موقع الجامعة أو شبكة المكتبة.
+                <div class="service-tag">Databases Access</div>
+            </div>
+            <div class="service-card">
+                <h4>برامج أكاديمية مدعومة</h4>
+                تدعم المكتبة برامج: اللغة العربية وآدابها، علوم المكتبات والمعلومات، والدراسات الإسلامية بمصادر متخصصة.
+                <div class="service-tag">Program Support</div>
+            </div>
+            <div class="service-card">
+                <h4>خدمات الإعارة والمرجعية</h4>
+                تشمل استعارة الكتب، تجديد الإعارة، الإرشاد المرجعي، والمساعدة في اختيار المصادر المناسبة لموضوع البحث.
+                <div class="service-tag">User Services</div>
+            </div>
+            <div class="service-card">
+                <h4>غرف الدراسة الجماعية</h4>
+                تتيح للطلبة العمل في مجموعات ضمن بيئة هادئة، ويمكن حجزها بالتنسيق مع موظفي المكتبة أو عبر النماذج الإلكترونية.
+                <div class="service-tag">Study Rooms</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- قسم الفهرس الموحد (محاكاة OPAC) -->
+    <section id="opacSection" class="card opac-card">
+        <div class="opac-header">
+            <div>
+                <div class="opac-header-title">📖 الفهرس الموحد لمكتبة جامعة الوصل</div>
+                <div class="opac-header-sub">محرك بحث تجريبي يوضح كيفية البحث في مقتنيات المكتبة (عنوان، مؤلف، موضوع، رقم تصنيف).</div>
+            </div>
+        </div>
+
+        <div class="opac-controls">
+            <input id="opacQuery" type="text" placeholder="اكتبي كلمة بحث (مثال: نحو، فهرسة، حديث، مكتبات)...">
+            <select id="opacField">
+                <option value="all">كل الحقول</option>
+                <option value="title">عنوان</option>
+                <option value="author">مؤلف</option>
+                <option value="subject">موضوع</option>
+                <option value="class">رقم تصنيف</option>
+            </select>
+            <button class="opac-search-btn" onclick="performOpacSearch()">بحث في الفهرس الموحد</button>
+        </div>
+
+        <div class="opac-results" id="opacResults">
+            <!-- نتائج البحث تظهر هنا -->
+        </div>
+    </section>
+
+    <footer>
+        Wasl Smart Library Bot – مكتبة جامعة الوصل – دبي
+    </footer>
+</div>
+
+<script>
+    const chatWindow = document.getElementById("chatWindow");
+    const userInput = document.getElementById("userInput");
+    const typingIndicator = document.getElementById("typingIndicator");
+
+    // بيانات تجريبية للفهرس الموحد
+    const opacRecords = [
+        {
+            title: "مدخل إلى علم المكتبات والمعلومات",
+            author: "د. أحمد عبد الهادي",
+            subject: "علوم المكتبات والمعلومات",
+            cls: "020",
+            status: "available",
+            location: "قاعات الرفوف العامة – 020 أ م م"
+        },
+        {
+            title: "الفهرسة والتصنيف في المكتبات",
+            author: "د. هدى عبد الرحمن",
+            subject: "الفهرسة – التصنيف – ديوي العشري",
+            cls: "025.3",
+            status: "library",
+            location: "قسم المراجع – 025.3 ه ع ف"
+        },
+        {
+            title: "النحو التطبيقي لطلبة الجامعات",
+            author: "د. محمد العبدالله",
+            subject: "اللغة العربية – النحو",
+            cls: "492.7",
+            status: "loan",
+            location: "رفوف اللغة العربية – 492.7 م ع ن"
+        },
+        {
+            title: "قواعد منهج البحث العلمي",
+            author: "د. عبد الكريم بكار",
+            subject: "منهجية البحث – مهارات أكاديمية",
+            cls: "001.42",
+            status: "available",
+            location: "الرفوف العامة – 001.42 ع ب ق"
+        },
+        {
+            title: "دراسات في الحديث النبوي وعلومه",
+            author: "د. عبد الله بن صالح",
+            subject: "الدراسات الإسلامية – الحديث",
+            cls: "297.125",
+            status: "available",
+            location: "قسم الدراسات الإسلامية – 297.125 ع س د"
+        },
+        {
+            title: "خدمات المعلومات في المكتبات الجامعية",
+            author: "د. منى الشاذلي",
+            subject: "خدمات المعلومات – مكتبات جامعية",
+            cls: "027.7",
+            status: "loan",
+            location: "قاعات الرفوف العامة – 027.7 م ش خ"
+        }
+    ];
+
+    window.addEventListener("load", () => {
+        addMessage(
+            "مرحبًا بك في روبوت دردشة مكتبة جامعة الوصل 👋\\n" +
+            "اسأليني عن المواعيد، الموقع، سياسة الإعارة، المصادر المتاحة، الفهرس الموحد، قواعد البيانات (مثل المنهل)، البرامج الأكاديمية، نظام التصنيف، أو طرق التواصل.",
+            "bot"
+        );
+        // عرض نتائج مبدئية في الفهرس الموحد
+        renderOpacResults(opacRecords, "عرض افتراضي لعينة من سجلات الفهرس الموحد.");
+    });
+
+    function addMessage(text, sender) {
+        const msg = document.createElement("div");
+        msg.classList.add("message", sender);
+        msg.textContent = text;
+        chatWindow.insertBefore(msg, typingIndicator);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function showTyping() {
+        typingIndicator.classList.add("active");
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function hideTyping() {
+        typingIndicator.classList.remove("active");
+    }
+
+    function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        addMessage(text, "user");
+        userInput.value = "";
+
+        showTyping();
+        setTimeout(() => {
+            const reply = generateReply(text);
+            hideTyping();
+            addMessage(reply, "bot");
+        }, 500);
+    }
+
+    function quickAsk(text) {
+        userInput.value = text;
+        sendMessage();
+    }
+
+    userInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function generateReply(text) {
+        const t = text.toLowerCase();
+
+        if (t.includes("مواعيد") || t.includes("الدوام") || t.includes("متى تفتح")) {
+            return "⏰ مواعيد عمل مكتبة جامعة الوصل:\\nمن الإثنين إلى الخميس: 8:00 صباحًا – 8:00 مساءً (قد تختلف المواعيد حسب الفصل الدراسي، يُفضل التأكد من موقع الجامعة أو لوحة الإعلانات).";
+        }
+
+        if (t.includes("موقع") || t.includes("أين") || t.includes("وين")) {
+            return "📍 موقع المكتبة:\\nتقع مكتبة جامعة الوصل داخل الحرم الجامعي – مبنى المكتبة الرئيس، الطابق الأرضي، بالقرب من مدخل كلية الآداب.";
+        }
+
+        if (t.includes("إعارة") || t.includes("استعارة") || t.includes("كم كتاب")) {
+            return "📚 سياسة الإعارة:\\n• طلاب البكالوريوس: يمكنهم استعارة عدد محدد من الكتب لفترة تمتد عادة من أسبوع إلى أسبوعين.\\n• يمكن تجديد الإعارة ما لم يكن هناك حجز على المصدر.\\n• في حال التأخر، قد تُطبّق غرامات حسب لائحة المكتبة.";
+        }
+
+        if (t.includes("مصادر") || t.includes("المصادر المتاحة") || t.includes("مصادر المعلومات")) {
+            return "📚 المصادر المتاحة في مكتبة جامعة الوصل:\\n• كتب عربية وأجنبية في مجالات تخصص الجامعة.\\n• مراجع وقواميس ومعاجم.\\n• رسائل جامعية وأبحاث.\\n• دوريات ومجلات علمية مطبوعة وإلكترونية.\\n• قواعد بيانات إلكترونية مثل قاعدة المنهل.\\nكل ذلك لدعم متطلبات الدراسة والبحث العلمي.";
+        }
+
+        if (t.includes("الفهرس الموحد") || t.includes("فهرس")) {
+            openOpac();
+            return "📖 الفهرس الموحد هو الفهرس الإلكتروني الذي يتيح لك البحث في جميع مقتنيات المكتبة بالعنوان، المؤلف، الموضوع، أو رقم التصنيف، مع معرفة حالة التوفر وموقع الكتاب على الرفوف. تم فتح شاشة الفهرس الموحد أدناه لتجربة البحث.";
+        }
+
+        if (t.includes("قواعد البيانات") || t.includes("قاعدة بيانات") || t.includes("المنهل")) {
+            return "💻 قواعد البيانات المتاحة:\\nمن أهمها قاعدة (المنهل) للمصادر العربية الإلكترونية، والتي توفر كتبًا ورسائل وأبحاثًا علمية.\\nيكون الوصول عادة من خلال موقع الجامعة أو صفحة المكتبة، باستخدام الحساب الجامعي أو من داخل شبكة الجامعة.";
+        }
+
+        if (t.includes("البرامج الأكاديمية") || t.includes("برامج") || t.includes("التخصصات") || t.includes("تخصصات")) {
+            return "🎓 البرامج الأكاديمية التي تخدمها مكتبة جامعة الوصل تشمل على سبيل المثال:\\n• برنامج اللغة العربية وآدابها.\\n• برنامج علوم المكتبات والمعلومات.\\n• برنامج الدراسات الإسلامية.\\nوتعمل المكتبة على توفير مصادر متخصصة لكل برنامج.";
+        }
+
+        if ((t.includes("نظام") && t.includes("تصنيف")) || t.includes("ديوي") || t.includes("ديوي العشري")) {
+            return "🔢 نظام التصنيف:\\nتعتمد مكتبة جامعة الوصل نظام ديوي العشري (Dewey Decimal Classification).\\nوهو نظام عالمي يقسّم المعرفة إلى عشر فئات رئيسة (000–900)، وكل فئة تنقسم إلى أقسام فرعية، مما يسهل تنظيم الكتب على الرفوف والوصول إليها حسب الموضوع.";
+        }
+
+        if (t.includes("غرفة") || t.includes("غرف") || t.includes("حجز") || t.includes("قاعات")) {
+            return "🗂 حجز غرف الدراسة:\\nيمكن حجز غرف الدراسة الجماعية بالتنسيق مع موظفي المكتبة، أو من خلال النماذج الإلكترونية المتاحة (إن وجدت)، مع تحديد اليوم والوقت وعدد الطلبة.";
+        }
+
+        if (t.includes("كيف أدخل إلى قاعدة المنهل") || t.includes("الوصول للمنهل")) {
+            return "🌐 طريقة الدخول إلى قاعدة المنهل:\\n• الدخول إلى موقع الجامعة الرسمي.\\n• الانتقال إلى صفحة المكتبة، ثم قسم قواعد البيانات الإلكترونية.\\n• اختيار (قاعدة المنهل).\\n• تسجيل الدخول إن لزم، عبر الحساب الجامعي أو من داخل شبكة الجامعة.";
+        }
+
+        if (t.includes("تواصل") || t.includes("رقم") || t.includes("إيميل") || t.includes("ايميل")) {
+            return "☎ طرق التواصل مع مكتبة جامعة الوصل:\\n• زيارة المكتبة مباشرة خلال ساعات الدوام.\\n• أو التواصل عبر البريد الإلكتروني الرسمي للمكتبة (المذكور في موقع الجامعة).\\n• أو من خلال قنوات خدمة الطلبة المعتمدة في الجامعة.";
+        }
+
+        if (t.includes("شات") || t.includes("بوت") || t.includes("chatbot")) {
+            return "🤖 هذا الروبوت يمثل نموذجًا تجريبيًا لشات بوت موجه لخدمة مستفيدي مكتبة جامعة الوصل، يعتمد على كلمات مفتاحية للإجابة عن أكثر الأسئلة تكرارًا، ويمكن تطويره مستقبلًا ليتكامل مع أنظمة المكتبة وقواعد البيانات باستخدام تقنيات ذكاء اصطناعي متقدمة.";
+        }
+
+        return "شكرًا لسؤالك 🌟\\nأستطيع حاليًا مساعدتك في: المواعيد، الموقع، الإعارة، المصادر المتاحة، الفهرس الموحد، قواعد البيانات (مثل المنهل)، البرامج الأكاديمية، نظام التصنيف، حجز الغرف، وطرق التواصل.\\nللاستفسارات الأكثر تخصصًا يُفضَّل التواصل مباشرة مع أمينة المكتبة.";
+    }
+
+    // المساعد البحثي الذكي
+    function summarize() {
+        let text = document.getElementById("aiInput").value.trim();
+        if (!text) {
+            document.getElementById("aiOutput").innerText = "يرجى لصق نص أو كتابة فقرة أولاً ليتم تلخيصها.";
+            return;
+        }
+
+        document.getElementById("aiOutput").innerText =
+            "✨ ملخص مقترح:\\n" +
+            "يطرح النص فكرة رئيسية تتعلق بموضوع بحثي محدد، ويتناول مجموعة من النقاط الرئيسة المرتبطة به، " +
+            "مثل الأهداف، وأهمية الموضوع، وأبرز الجوانب التي يناقشها الباحث، مما يساعد القارئ على تكوين صورة عامة عن محتوى النص دون الدخول في جميع التفاصيل.";
+    }
+
+    function keywords() {
+        let baseKeywords =
+            "🔑 كلمات مفتاحية مقترحة:\\n" +
+            "• مكتبات جامعية\\n" +
+            "• خدمات معلومات\\n" +
+            "• شات بوت\\n" +
+            "• ذكاء اصطناعي\\n" +
+            "• تجربة المستفيد\\n" +
+            "• مصادر إلكترونية\\n" +
+            "• قواعد بيانات\\n" +
+            "• بحث علمي";
+
+        document.getElementById("aiOutput").innerText = baseKeywords;
+    }
+
+    function titleGenerate() {
+        let suggestion =
+            "📝 عنوان بحث مقترح:\\n" +
+            "توظيف روبوتات الدردشة المدعومة بالذكاء الاصطناعي في تطوير خدمات المكتبات الجامعية: دراسة تطبيقية على مكتبة جامعة الوصل";
+
+        document.getElementById("aiOutput").innerText = suggestion;
+    }
+
+    function writeEmail() {
+        let template =
+            "📩 استفسار رسمي جاهز:\\n" +
+            "السادة/ مكتبة جامعة الوصل المحترمين،\\n\\n" +
+            "تحية طيبة وبعد،\\n\\n" +
+            "أود الاستفسار عن إمكانية الحصول على مزيد من المعلومات حول ... (اذكر موضوعك هنا)، " +
+            "وكذلك الإرشاد إلى المصادر أو قواعد البيانات المناسبة لهذا الموضوع.\\n\\n" +
+            "شاكر/ـة لكم تعاونكم الكريم.\\n\\n" +
+            "الاسم: ...............\\n" +
+            "الرقم الجامعي: ...............\\n" +
+            "الكلية/ التخصص: ...............";
+
+        document.getElementById("aiOutput").innerText = template;
+    }
+
+    // ===== الفهرس الموحد (OPAC Simulation) =====
+
+    function openOpac() {
+        const section = document.getElementById("opacSection");
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+        section.classList.add("highlight-opac");
+        setTimeout(() => section.classList.remove("highlight-opac"), 700);
+    }
+
+    function performOpacSearch() {
+        const query = document.getElementById("opacQuery").value.trim().toLowerCase();
+        const field = document.getElementById("opacField").value;
+
+        if (!query) {
+            renderOpacResults(opacRecords, "تم عرض عينة من سجلات الفهرس، اكتب كلمة بحث لتصفية النتائج.");
+            return;
+        }
+
+        const filtered = opacRecords.filter(rec => {
+            const inTitle   = rec.title.toLowerCase().includes(query);
+            const inAuthor  = rec.author.toLowerCase().includes(query);
+            const inSubject = rec.subject.toLowerCase().includes(query);
+            const inClass   = rec.cls.toLowerCase().includes(query);
+
+            if (field === "title")  return inTitle;
+            if (field === "author") return inAuthor;
+            if (field === "subject")return inSubject;
+            if (field === "class")  return inClass;
+            return inTitle || inAuthor || inSubject || inClass;
+        });
+
+        if (filtered.length === 0) {
+            const box = document.getElementById("opacResults");
+            box.innerHTML =
+                "<div style='font-size:12px; color:#9ca3af;'>⚠ لم يتم العثور على نتائج مطابقة. جرّبي كلمة أخرى أو نوع بحث مختلف.</div>";
+        } else {
+            renderOpacResults(filtered, "نتائج بحث تجريبية من الفهرس الموحد بناءً على كلمة البحث المدخلة.");
+        }
+    }
+
+    function renderOpacResults(records, noteText) {
+        const box = document.getElementById("opacResults");
+        let html = "";
+
+        html += "<div style='font-size:11px; color:#9ca3af; margin-bottom:4px;'>" + noteText + "</div>";
+        html += "<table><thead><tr>";
+        html += "<th>العنوان</th><th>اسم المؤلف</th><th>الموضوع</th><th>رقم التصنيف</th><th>الحالة</th><th>الموقع على الرف</th>";
+        html += "</tr></thead><tbody>";
+
+        records.forEach(rec => {
+            let statusClass = "status-available";
+            let statusText  = "متوفر";
+
+            if (rec.status === "loan") {
+                statusClass = "status-loan";
+                statusText  = "معار حاليًا";
+            } else if (rec.status === "library") {
+                statusClass = "status-library";
+                statusText  = "للاستخدام داخل المكتبة";
+            }
+
+            html += "<tr>";
+            html += "<td>" + rec.title + "</td>";
+            html += "<td>" + rec.author + "</td>";
+            html += "<td>" + rec.subject + "</td>";
+            html += "<td>" + rec.cls + "</td>";
+            html += "<td class='" + statusClass + "'>" + statusText + "</td>";
+            html += "<td>" + rec.location + "</td>";
+            html += "</tr>";
+        });
+
+        html += "</tbody></table>";
+        box.innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
