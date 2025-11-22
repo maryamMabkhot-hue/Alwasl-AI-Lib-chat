@@ -590,17 +590,9 @@
             z-index: 1;
         }
 
-        .status-available {
-            color: #22c55e;
-        }
-
-        .status-loan {
-            color: #f97316;
-        }
-
-        .status-library {
-            color: #eab308;
-        }
+        .status-available { color: #22c55e; }
+        .status-loan      { color: #f97316; }
+        .status-library   { color: #eab308; }
 
         .highlight-opac {
             box-shadow: 0 0 0 1px rgba(56,189,248,0.9), 0 0 28px rgba(56,189,248,0.7);
@@ -620,8 +612,8 @@
 
 <div class="page">
     <header>
-<img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QCMRXhpZgAATU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAA ...الخ" 
-     alt="شعار جامعة الوصل" class="wasl-logo">
+        <!-- هنا الشعار، الكود يفترض أن الملف اسمه logo.png -->
+        <img src="logo.png" alt="شعار جامعة الوصل" class="wasl-logo">
 
         <div class="header-text">
             <h1>روبوت دردشة مكتبة جامعة الوصل</h1>
@@ -747,9 +739,7 @@
             <button class="opac-search-btn" onclick="performOpacSearch()">بحث في الفهرس الموحد</button>
         </div>
 
-        <div class="opac-results" id="opacResults">
-            <!-- نتائج البحث تظهر هنا -->
-        </div>
+        <div class="opac-results" id="opacResults"></div>
     </section>
 
     <footer>
@@ -762,8 +752,16 @@
     const userInput = document.getElementById("userInput");
     const typingIndicator = document.getElementById("typingIndicator");
 
-    // بيانات تجريبية للفهرس الموحد
+    // سجلات تجريبية للفهرس الموحد (فيها سجل مشروع مريم)
     const opacRecords = [
+        {
+            title: "تصميم وبناء شات بوت لخدمات المكتبة الجامعية",
+            author: "الطالبة مريم – مشروع تخرج",
+            subject: "مكتبات جامعية – ذكاء اصطناعي – شات بوت",
+            cls: "027.7",
+            status: "available",
+            location: "قسم الرسائل الجامعية – مشروع تخرج مكتبة جامعة الوصل"
+        },
         {
             title: "مدخل إلى علم المكتبات والمعلومات",
             author: "د. أحمد عبد الهادي",
@@ -820,7 +818,6 @@
             "اسأليني عن المواعيد، الموقع، سياسة الإعارة، المصادر المتاحة، الفهرس الموحد، قواعد البيانات (مثل المنهل)، البرامج الأكاديمية، نظام التصنيف، أو طرق التواصل.",
             "bot"
         );
-        // عرض نتائج مبدئية في الفهرس الموحد
         renderOpacResults(opacRecords, "عرض افتراضي لعينة من سجلات الفهرس الموحد.");
     });
 
